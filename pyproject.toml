@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "multiclass-flare-prediction"
+version = "0.1.0"
+description = ""
+authors = ["Jinsu Hong <jinsuhong.knight@gmail.com>"]
+readme = "README.md"
+packages = [{include = "multiclass_flare_prediction"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
