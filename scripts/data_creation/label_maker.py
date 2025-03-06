@@ -3,7 +3,9 @@
 # To create the label, log scale flare intensity is used
 
 import os
+import glob
 import os.path
+import argparse
 import pandas as pd
 
 # pd.options.mode.chained_assignment = None
@@ -12,65 +14,77 @@ import pandas as pd
 # In this function, to create the label
 # the maximum intensity of flare between midnight to midnight
 # and noon to noon with respective date is used.
-def sixhourly_obs(df_fl, df_rec, stop, class_type="bin"):
+def rolling_window(
+    df_fl: pd.DataFrame, img_dir, start, stop, cadence: int = 6, class_type="bin"
+):
 
     # Datetime
-    df_fl["start"] = pd.to_datetime(
-        df_fl["event_starttime"], format="%Y-%m-%d %H:%M:%S"
+    df_fl["start_time"] = pd.to_datetime(
+        df_fl["start_time"], format="%Y-%m-%d %H:%M:%S"
     )
 
-    # define dataset without missing
-    df_rec["Timestamp"] = pd.to_datetime(
-        df_rec["Timestamp"], format="%Y.%m.%d_%H.%M.%S"
-    )
-    df_rec.query("EUV304 != 0 & HMI_Mag != 0 & HMI_CTnuum != 0", inplace=True)
-    # print(df_rec)
+    # cadence list
+    hour_tag = [f"{i:02d}:00:00.jpg" for i in range(0, 24, cadence)]
 
     # List to store intermediate results
     lis = []
-    cols = ["Timestamp", "GOES_cls", "Label"]
+    cols = ["Timestamp", "goes_class", "label"]
 
-    # Loop to check max from midnight to midnight and noon to noon
-    for i in range(len(df_rec)):
+    for year in range(start, stop + 1):
+        for month in range(1, 13):
+            for day in range(1, 32):
 
-        # Date with max intensity of flare with in the 24 hour window
-        window_start = df_rec.iloc[i, 0]  # timestamp
-        window_end = window_start + pd.Timedelta(hours=23, minutes=59, seconds=59)
+                dir = img_dir + f"{year}/{month:02d}/{day:02d}/*.jpg"
+                files = sorted(glob.glob(dir))
 
-        if window_start > stop:
-            break
+                for file in files:
 
-        emp = (
-            df_fl[(df_fl.start > window_start) & (df_fl.start <= window_end)]
-            .sort_values("fl_goescls", ascending=False)
-            .head(1)
-            .squeeze(axis=0)
-        )
-        if pd.Series(emp.fl_goescls).empty:
-            ins = ""
-            target = 0
-        else:
-            ins = emp.fl_goescls
+                    if file.split("_")[-1] not in hour_tag:
+                        continue
 
-            if class_type == "bin":
-                if ins >= "M1.0":  # FQ and A class flares
-                    target = 1
-                else:
-                    target = 0
-            elif class_type == "multi":
+                    window_start = pd.to_datetime(
+                        file.split("HMI.m")[1][:-4], format="%Y.%m.%d_%H.%M.%S"
+                    )
+                    window_end = window_start + pd.Timedelta(
+                        hours=23, minutes=59, seconds=59
+                    )
 
-                if ins >= "M1.0":  # FQ and A class flares
-                    target = 3
-                elif ins >= "C1.0":
-                    target = 2
-                elif ins >= "B1.0":
-                    target = 1
-                else:
-                    target = 0
+                    emp = (
+                        df_fl[
+                            (df_fl.start_time > window_start)
+                            & (df_fl.start_time <= window_end)
+                        ]
+                        .sort_values("goes_class", ascending=False)
+                        .head(1)
+                        .squeeze(axis=0)
+                    )
+                    if pd.Series(emp.goes_class).empty:
+                        ins = "FQ"
+                        target = 0
+                    else:
+                        ins = emp.goes_class
 
-        lis.append([window_start, ins, target])
+                        if class_type == "bin":
+                            if ins >= "M1.0":  # FQ and A class flares
+                                target = 1
+                            else:
+                                target = 0
+                        elif class_type == "multi":
+
+                            if ins >= "M1.0":  # FQ and A class flares
+                                target = 3
+                            elif ins >= "C1.0":
+                                target = 2
+                            elif ins >= "B1.0":
+                                target = 1
+                            else:
+                                target = 0
+
+                    lis.append([window_start, ins, target])
 
     df_out = pd.DataFrame(lis, columns=cols)
+
+    # df_out['Timestamp'] = pd.to_datetime(df_out['Timestamp'], format='%Y-%m-%d %H:%M:%S')
     df_out["Timestamp"] = df_out["Timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
 
     return df_out
@@ -92,7 +106,7 @@ def create_partitions(df, savepath="/", class_type="bin"):
             .str.contains("|".join(search_for))
         )
         partition = df[mask]
-        print(partition["GOES_cls"].value_counts())
+        print(partition["goes_class"].value_counts())
 
         # Make directory
         if not os.path.isdir(savepath):
@@ -104,7 +118,7 @@ def create_partitions(df, savepath="/", class_type="bin"):
             savepath + f"24image_{class_type}_GOES_classification_Partition{i+1}.csv",
             index=False,
             header=True,
-            columns=["Timestamp", "GOES_cls", "Label"],
+            columns=["Timestamp", "goes_class", "label"],
         )
 
 
@@ -125,8 +139,8 @@ def create_CVDataset(df, savepath="/", class_type="bin"):
         )
         train = df[~mask]
         val = df[mask]
-        print(train["GOES_cls"].value_counts())
-        print(val["GOES_cls"].value_counts())
+        print(train["goes_class"].value_counts())
+        print(val["goes_class"].value_counts())
 
         # Make directory
         if not os.path.isdir(savepath):
@@ -138,34 +152,46 @@ def create_CVDataset(df, savepath="/", class_type="bin"):
             savepath + f"24image_{class_type}_GOES_classification_Fold{i+1}_train.csv",
             index=False,
             header=True,
-            columns=["Timestamp", "GOES_cls", "Label"],
+            columns=["Timestamp", "goes_class", "label"],
         )
 
         val.to_csv(
             savepath + f"24image_{class_type}_GOES_classification_Fold{i+1}_val.csv",
             index=False,
             header=True,
-            columns=["Timestamp", "GOES_cls", "Label"],
+            columns=["Timestamp", "goes_class", "label"],
         )
 
 
 if __name__ == "__main__":
 
     # Load Original source for Goes Flare X-ray Flux
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--data_path", type=str, default="/workspace/data/", help="Path to data folder"
+    )
+    parser.add_argument(
+        "--start", type=int, default="2010", help="start time of the dataset"
+    )
+    parser.add_argument(
+        "--end", type=int, default="2018", help="end time of the dataset"
+    )
+    args = parser.parse_args()
+
     df_fl = pd.read_csv(
-        "/workspace/Project/Multi_imagery_SFPred/Dataset/flare_catalog_2010-2024.csv",
-        usecols=["event_starttime", "fl_goescls"],
+        args.data_path + "catalog/MultiwayIntegration_2010_to_2018_conf_rxfi.csv",
+        usecols=["start_time", "goes_class"],
     )
-
-    df_rec = pd.read_csv(
-        "/workspace/Project/Multi_imagery_SFPred/Dataset/Missing_info.csv"
-    )
-
-    savepath = "/workspace/Project/Multi_imagery_SFPred/Dataset/label/"
-
-    stop = pd.to_datetime("2024-07-31 23:59:59", format="%Y-%m-%d %H:%M:%S")
 
     # Calling functions in order
-    df_res = sixhourly_obs(df_fl=df_fl, df_rec=df_rec, stop=stop, class_type="multi")
+    df_res = rolling_window(
+        df_fl,
+        args.data_path,
+        start=args.start,
+        stop=args.end,
+        cadence=6,
+        class_type="multi",
+    )
+
+    savepath = os.getcwd()
     create_partitions(df_res, savepath=savepath, class_type="multi")
-    create_CVDataset(df_res, savepath=savepath, class_type="multi")
