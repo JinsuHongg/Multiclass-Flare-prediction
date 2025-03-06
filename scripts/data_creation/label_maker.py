@@ -122,47 +122,6 @@ def create_partitions(df, savepath="/", class_type="bin"):
         )
 
 
-# Creating time-segmented 4-Fold CV Dataset, where 9 months of data is used for training and rest 3 for validation
-def create_CVDataset(df, savepath="/", class_type="bin"):
-    search_list = [
-        ["01", "02", "03"],
-        ["04", "05", "06"],
-        ["07", "08", "09"],
-        ["10", "11", "12"],
-    ]
-    for i in range(4):
-        search_for = search_list[i]
-        mask = (
-            df["Timestamp"]
-            .apply(lambda row: row[5:7])
-            .str.contains("|".join(search_for))
-        )
-        train = df[~mask]
-        val = df[mask]
-        print(train["goes_class"].value_counts())
-        print(val["goes_class"].value_counts())
-
-        # Make directory
-        if not os.path.isdir(savepath):
-            os.mkdir(savepath)
-            print("Created directory:", savepath)
-
-        # Dumping the dataframe into CSV with label as Date and goes_class as intensity
-        train.to_csv(
-            savepath + f"24image_{class_type}_GOES_classification_Fold{i+1}_train.csv",
-            index=False,
-            header=True,
-            columns=["Timestamp", "goes_class", "label"],
-        )
-
-        val.to_csv(
-            savepath + f"24image_{class_type}_GOES_classification_Fold{i+1}_val.csv",
-            index=False,
-            header=True,
-            columns=["Timestamp", "goes_class", "label"],
-        )
-
-
 if __name__ == "__main__":
 
     # Load Original source for Goes Flare X-ray Flux

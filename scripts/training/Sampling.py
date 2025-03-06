@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, ConcatDataset
 
 
-def oversample_func(df, img_dir: list, channel: list, norm=True):
+def oversample_func(df, img_dir: list, norm=True):
 
     # define transformations
     rotation = transforms.Compose(

@@ -6,7 +6,7 @@ def train_loop(dataloader, model, loss_fn, optimizer=None, lr_scheduler=None):
     # Set the model to training mode - important for batch normalization and dropout layers
     # Unnecessary in this situation but added for best practices
     model.train()
-    size = len(dataloader.dataset)
+    # size = len(dataloader.dataset)
     num_batches = len(dataloader)
 
     pred_arr = np.empty((0, 2), int)
