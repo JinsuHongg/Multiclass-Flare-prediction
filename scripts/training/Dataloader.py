@@ -42,7 +42,7 @@ class SolarFlSets(Dataset):
         img_path = os.path.join(
             self.img_dir,
             f"{img_t.year}/{img_t.month:02d}/{img_t.day:02d}/"
-            + f"HMI.{img_t.year}.{img_t.month:02d}.{img_t.day:02d}_"
+            + f"HMI.m{img_t.year}.{img_t.month:02d}.{img_t.day:02d}_"
             + f"{img_t.hour:02d}.{img_t.minute:02d}.{img_t.second:02d}.jpg",
         )
         image = read_image(img_path).float().repeat(3, 1, 1)

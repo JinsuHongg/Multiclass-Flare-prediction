@@ -46,9 +46,9 @@ def oversample_func(df, img_dir: list, norm=True):
 
     # computer number of samples,  base: 1.1 * num of label = 2 (B-class)
     list_ratio = []
-    base = len(df.loc[df["Label"] == 2, :]) * 1.1
+    base = len(df.loc[df["label"] == 2, :]) * 1.1
     for i in [0, 1, 3]:
-        ratio = base / len(df.loc[df["Label"] == i, :])
+        ratio = base / len(df.loc[df["label"] == i, :])
         if ratio >= 1:
             list_ratio.append((ratio - 1) / 3)
         else:
@@ -56,16 +56,15 @@ def oversample_func(df, img_dir: list, norm=True):
             print("Error Occurred, please check imbalance ratio")
 
     # Flaring instances
-    df_zero = df[df["Label"] == 0]
+    df_zero = df[df["label"] == 0]
     ori_zero = SolarFlSets(
-        annotations_df=df_zero, img_dir=img_dir, channel=channel, normalization=norm
+        annotations_df=df_zero, img_dir=img_dir, normalization=norm
     )
     rotation_zero = SolarFlSets(
         annotations_df=df_zero,
         img_dir=img_dir,
         num_sample=int((list_ratio[0]) * len(df_zero)),
         random_state=4,
-        channel=channel,
         transform=rotation,
         normalization=norm,
     )
@@ -74,7 +73,6 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[0]) * len(df_zero)),
         random_state=16,
-        channel=channel,
         transform=hr_flip,
         normalization=norm,
     )
@@ -83,7 +81,6 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[0]) * len(df_zero)),
         random_state=64,
-        channel=channel,
         transform=vr_flip,
         normalization=norm,
     )
@@ -91,16 +88,15 @@ def oversample_func(df, img_dir: list, norm=True):
         len(ori_zero) + len(rotation_zero) + len(hr_flip_zero) + len(vr_flip_zero)
     )
 
-    df_one = df[df["Label"] == 1]
+    df_one = df[df["label"] == 1]
     ori_one = SolarFlSets(
-        annotations_df=df_one, img_dir=img_dir, channel=channel, normalization=norm
+        annotations_df=df_one, img_dir=img_dir, normalization=norm
     )
     rotation_one = SolarFlSets(
         annotations_df=df_one,
         img_dir=img_dir,
         num_sample=int((list_ratio[1]) * len(df_one)),
         random_state=4,
-        channel=channel,
         transform=rotation,
         normalization=norm,
     )
@@ -109,7 +105,6 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[1]) * len(df_one)),
         random_state=16,
-        channel=channel,
         transform=hr_flip,
         normalization=norm,
     )
@@ -118,37 +113,34 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[1]) * len(df_one)),
         random_state=64,
-        channel=channel,
         transform=vr_flip,
         normalization=norm,
     )
     num_one_ins = len(ori_one) + len(rotation_one) + len(hr_flip_one) + len(vr_flip_one)
 
-    df_two = df[df["Label"] == 2]
+    df_two = df[df["label"] == 2]
     ori_two = SolarFlSets(
-        annotations_df=df_two, img_dir=img_dir, channel=channel, normalization=norm
+        annotations_df=df_two, img_dir=img_dir, normalization=norm
     )
     ori_random_two = SolarFlSets(
         annotations_df=df_two,
         img_dir=img_dir,
         num_sample=int(0.1 * len(df_two)),
         random_state=4,
-        channel=channel,
         transform=nf_augment,
         normalization=norm,
     )
     num_two_ins = len(ori_two) + len(ori_random_two)
 
-    df_thre = df[df["Label"] == 3]
+    df_thre = df[df["label"] == 3]
     ori_thre = SolarFlSets(
-        annotations_df=df_thre, img_dir=img_dir, channel=channel, normalization=norm
+        annotations_df=df_thre, img_dir=img_dir, normalization=norm
     )
     rotation_thre = SolarFlSets(
         annotations_df=df_thre,
         img_dir=img_dir,
         num_sample=int((list_ratio[2]) * len(df_thre)),
         random_state=4,
-        channel=channel,
         transform=rotation,
         normalization=norm,
     )
@@ -157,7 +149,6 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[2]) * len(df_thre)),
         random_state=16,
-        channel=channel,
         transform=hr_flip,
         normalization=norm,
     )
@@ -166,7 +157,6 @@ def oversample_func(df, img_dir: list, norm=True):
         img_dir=img_dir,
         num_sample=int((list_ratio[2]) * len(df_thre)),
         random_state=64,
-        channel=channel,
         transform=vr_flip,
         normalization=norm,
     )

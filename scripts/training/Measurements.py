@@ -3,7 +3,6 @@ import numpy as np
 # from sklearn.metrics import confusion_matrix
 # from sklearn.metrics import f1_score
 
-
 def TSS(table):
     """
     Calculates the true skill score based on the true classes and the predicted ones.
