@@ -1,5 +1,6 @@
 # basic package
 import os
+import glob
 import yaml
 import time
 import datetime
@@ -43,6 +44,7 @@ parser = argparse.ArgumentParser(description="Hyperparameter Configuration")
 args = parser.parse_args()
 
 config_path = "./configs/cp_config.yaml"
+print(glob.glob(config_path))
 with open(config_path, "r") as f:
     yaml_config = yaml.safe_load(f)
 args.__dict__.update(yaml_config)
