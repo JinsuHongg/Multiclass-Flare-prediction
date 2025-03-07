@@ -42,7 +42,7 @@ print("2nd process, loading data...")
 parser = argparse.ArgumentParser(description="Hyperparameter Configuration")
 args = parser.parse_args()
 
-config_path = "./scripts/configs/cp_config.yaml"
+config_path = "./configs/cp_config.yaml"
 with open(config_path, "r") as f:
     yaml_config = yaml.safe_load(f)
 args.__dict__.update(yaml_config)
