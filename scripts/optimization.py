@@ -16,8 +16,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, ConcatDataset
 
 # predefined class
-from .scripts.models import Alexnet, Mobilenet, Resnet18, Resnet34, Resnet50
-from .scripts.training import (
+from .models import Alexnet, Mobilenet, Resnet18, Resnet34, Resnet50
+from .training import (
     SolarFlSets,
     HSS_multiclass,
     TSS_multiclass,
