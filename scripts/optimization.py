@@ -17,6 +17,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, ConcatDataset
 
 # predefined class
+from .configs import get_args
 from .models import Alexnet, Mobilenet, Resnet18, Resnet34, Resnet50
 from .training import (
     SolarFlSets,
@@ -40,16 +41,7 @@ print("Device:", device)
 print("2nd process, loading data...")
 
 # define arguments
-parser = argparse.ArgumentParser(description="Hyperparameter Configuration")
-args = parser.parse_args()
-
-config_path = "./configs/cp_config.yaml"
-print(glob.glob(config_path))
-with open(config_path, "r") as f:
-    yaml_config = yaml.safe_load(f)
-args.__dict__.update(yaml_config)
-
-print(args)
+args = get_args()
 
 # define transformations / augmentation
 rotation = transforms.Compose(
@@ -77,10 +69,8 @@ vr_flip = transforms.Compose(
 )
 
 # define directory here
-img_dir = args.data_dir
-crr_dir = os.getcwd() + "/Multiclass-Flare-prediction/"
-
-print(f"Model: {args.models}")
+img_dir = args.img_dir
+print(f"Model: {args.model}")
 print(
     f"Hyper parameters: batch_size: {args.batch_size}, number of epoch: {args.epochs}"
 )
@@ -95,14 +85,14 @@ train_list = args.train_set
 df_train = pd.DataFrame([], columns=["Timestamp", "goes_class", "label"])
 for partition in train_list:
     d = pd.read_csv(
-        "./scripts/data_creation/"
+        "./Multiclass-Flare-prediction/scripts/data_creation/"
         + f"4image_multi_GOES_classification_Partition{partition}.csv"
     )
     df_train = pd.concat([df_train, d])
 
 # test set and calibration set
 df_test = pd.read_csv(
-    "./scripts/data_creation/"
+    "./Multiclass-Flare-prediction/scripts/data_creation/"
     + f"4image_multi_GOES_classification_Partition{args.test_set}.csv"
 )
 
@@ -134,18 +124,17 @@ for wt in args.wt_decay:
     - Their position matters
     """
     # define model here
-    if args.models == "Alexnet":
+    if args.model == "Alexnet":
         net = Alexnet().to(device)
-    elif args.models == "Mobilenet":
+    elif args.model == "Mobilenet":
         net = Mobilenet().to(device)
-    elif args.models == "Resnet18":
+    elif args.model == "Resnet18":
         net = Resnet18().to(device)
-    elif args.models == "Resnet34":
+    elif args.model == "Resnet34":
         net = Resnet34().to(device)
-    elif args.models == "Resnet50":
+    elif args.model == "Resnet50":
         net = Resnet50().to(device)
     else:
-        print("Model Selected: ", args.models)
         print("Invalid Model")
         exit()
 
@@ -191,7 +180,7 @@ for wt in args.wt_decay:
         test_loss, test_result = test_loop(
             test_dataloader, model=model, loss_fn=loss_fn
         )
-        table = confusion_matrix(test_result[:, 1], test_result[:, 0]).ravel()
+        table = confusion_matrix(test_result[:, 1], test_result[:, 0])
         HSS_score = HSS_multiclass(table)
         TSS_score = TSS_multiclass(table)
         F1_score = f1_score(test_result[:, 1], test_result[:, 0], average="macro")
@@ -226,9 +215,8 @@ for wt in args.wt_decay:
             best_loss = test_loss
 
             PATH = (
-                crr_dir
-                + "results/trained/"
-                + f"{args.models}_{year}{month:02d}_train123_test4_{args.filetag}_{iter}.pth"
+                "./Multiclass-Flare-prediction/results/trained/"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.pth"
             )
             # save model
             torch.save(
@@ -247,9 +235,8 @@ for wt in args.wt_decay:
 
             # save prediction array
             pred_path = (
-                crr_dir
-                + "results/prediction/"
-                + f"{args.models}_{year}{month:02d}_train123_test4_{args.filetag}_{iter}.npy"
+                "./Multiclass-Flare-prediction/results/prediction/"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.npy"
             )
 
             with open(pred_path, "wb") as f:
@@ -281,9 +268,8 @@ df_result = pd.DataFrame(
 )
 
 total_save_path = (
-    crr_dir
-    + "results/validation/"
-    + f"{args.models}_{year}{month:02d}_validation_{args.filetag}_results.csv"
+    "./Multiclass-Flare-prediction/results/validation/"
+    + f"{args.model}_{year}{month:02d}_validation_{args.file_tag}_results.csv"
 )
 
 print("Save file here:", total_save_path)
