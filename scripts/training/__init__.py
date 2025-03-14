@@ -1,4 +1,4 @@
-from .Dataloader import SolarFlSets
+from .Dataloader import SolarFlSets, BootstrapSampler
 from .Measurements import (
     HSS_multiclass,
     TSS_multiclass,
@@ -8,6 +8,7 @@ from .Sampling import oversample_func
 
 __all__ = [
     "SolarFlSets",
+    "BootstrapSampler",
     "HSS2",
     "TSS",
     "F1Pos",

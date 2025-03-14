@@ -5,7 +5,8 @@ train:
   model: "Alexnet"
   train_set: ["1", "2", "3"]
   test_set: 4
-  file_tag: "MCD"
+  file_tag: "ENBL"
+  num_models: 5
 
 optimize:
   epochs: 50

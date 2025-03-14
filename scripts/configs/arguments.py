@@ -1,12 +1,20 @@
 import argparse
 import yaml
 
-def get_args():
+
+def get_args(
+    config_dir: str = "./Multiclass-Flare-prediction/scripts/configs/cp_config.yaml",
+):
     parser = argparse.ArgumentParser()
-    
+
     # General arguments
-    parser.add_argument("--config", type=str, default="./Multiclass-Flare-prediction/scripts/configs/cp_config.yaml", help="Path to YAML config file")
-    
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=config_dir,
+        help="Path to YAML config file",
+    )
+
     # Directory arguments
     parser.add_argument("--img_dir", type=str, default=None)
 
@@ -14,6 +22,7 @@ def get_args():
     parser.add_argument("--model", type=str, default="Alexnet")
     parser.add_argument("--train_set", type=float, nargs="+", default=[1, 2])
     parser.add_argument("--test_set", type=int, default=4)
+    parser.add_argument("--num_models", type=int, default=5)
     parser.add_argument("--file_tag", type=str, default="cp")
 
     # Optimization arguments
@@ -29,7 +38,7 @@ def get_args():
     if args.config:
         with open(args.config, "r") as f:
             yaml_config = yaml.safe_load(f)
-        
+
         # Flatten and update args
         for key, sub_dict in yaml_config.items():
             if isinstance(sub_dict, dict):  # If it's a nested dictionary

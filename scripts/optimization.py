@@ -41,7 +41,7 @@ print("Device:", device)
 print("2nd process, loading data...")
 
 # define arguments
-args = get_args()
+args = get_args("./Multiclass-Flare-prediction/scripts/configs/cp_config.yaml")
 
 # define transformations / augmentation
 rotation = transforms.Compose(
@@ -224,8 +224,6 @@ for wt in args.wt_decay:
                     "epoch": t,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
-                    "training loss": train_loss,
-                    "testing loss": test_loss,
                     "HSS_test": HSS_score,
                     "TSS_test": TSS_score,
                     "F1_macro": F1_score,

@@ -1,7 +1,8 @@
 import os
 
 # import torch
-from torch.utils.data import Dataset
+import numpy as np
+from torch.utils.data import Dataset, DataLoader, Sampler
 from torchvision.io import read_image
 
 # import torchvision.transforms as transforms
@@ -55,3 +56,22 @@ class SolarFlSets(Dataset):
         if self.norm:
             image = image / 255  # zero to one normalization
         return image, label
+
+
+class BootstrapSampler(Sampler):
+    """Bootstrap sampling for PyTorch DataLoader."""
+
+    def __init__(self, data_source, num_samples=None):
+        self.data_source = data_source
+        self.num_samples = (
+            num_samples if num_samples is not None else len(self.data_source)
+        )
+
+    def __iter__(self):
+        indices = np.random.choice(
+            len(self.data_source), size=self.num_samples, replace=True
+        )
+        return iter(indices)
+
+    def __len__(self):
+        return self.num_samples
