@@ -123,7 +123,7 @@ test_dataloader = DataLoader(
 # Cross-validatation with optimization ( total = 4folds X Learning rate sets X weight decay sets )
 
 for i_model, train_dataloader in enumerate(train_dataloaders):
-    print(f"Training model {i+1}/{args.num_models}")
+    print(f"Training model {i_model+1}/{args.num_models}")
 
     training_result = []
     for wt in args.wt_decay:
@@ -148,7 +148,7 @@ for i_model, train_dataloader in enumerate(train_dataloaders):
             exit()
 
         # model setting
-        model = nn.DataParallel(net, device_ids=[0, 1]).to(device)
+        model = nn.DataParallel(net, device_ids=[1])#.to(device)
 
         # class weight
         # device = next(model.parameters()).device
