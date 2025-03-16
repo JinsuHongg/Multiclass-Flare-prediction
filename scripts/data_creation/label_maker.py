@@ -24,7 +24,7 @@ def rolling_window(
     )
 
     # cadence list
-    hour_tag = [f"{i:02d}:00:00.jpg" for i in range(0, 24, cadence)]
+    hour_tag = [f"{i:02d}.00.00.jpg" for i in range(0, 24, cadence)]
 
     # List to store intermediate results
     lis = []
@@ -32,13 +32,13 @@ def rolling_window(
 
     for year in range(start, stop + 1):
         for month in range(1, 13):
+            print(f"{year} {month:02d} processing...")
             for day in range(1, 32):
-
                 dir = img_dir + f"{year}/{month:02d}/{day:02d}/*.jpg"
                 files = sorted(glob.glob(dir))
 
                 for file in files:
-
+                    
                     if file.split("_")[-1] not in hour_tag:
                         continue
 
@@ -83,6 +83,7 @@ def rolling_window(
                     lis.append([window_start, ins, target])
 
     df_out = pd.DataFrame(lis, columns=cols)
+    print(df_out.head())
 
     # df_out['Timestamp'] = pd.to_datetime(df_out['Timestamp'], format='%Y-%m-%d %H:%M:%S')
     df_out["Timestamp"] = df_out["Timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -106,7 +107,7 @@ def create_partitions(df, savepath="/", class_type="bin"):
             .str.contains("|".join(search_for))
         )
         partition = df[mask]
-        print(partition["goes_class"].value_counts())
+        print(partition["label"].value_counts())
 
         # Make directory
         if not os.path.isdir(savepath):
@@ -115,7 +116,7 @@ def create_partitions(df, savepath="/", class_type="bin"):
 
         # Dumping the dataframe into CSV with label as Date and goes_class as intensity
         partition.to_csv(
-            savepath + f"24image_{class_type}_GOES_classification_Partition{i+1}.csv",
+            savepath + f"4image_{class_type}_GOES_classification_Partition{i+1}.csv",
             index=False,
             header=True,
             columns=["Timestamp", "goes_class", "label"],
@@ -138,19 +139,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     df_fl = pd.read_csv(
-        args.data_path + "catalog/MultiwayIntegration_2010_to_2018_conf_rxfi.csv",
+        args.data_path + "catalog/sdo_era_goes_flares_integrated_all_CME_r1.csv",
         usecols=["start_time", "goes_class"],
     )
 
     # Calling functions in order
     df_res = rolling_window(
         df_fl,
-        args.data_path,
+        img_dir=args.data_path + 'hmi_jpgs_512/',
         start=args.start,
         stop=args.end,
         cadence=6,
         class_type="multi",
     )
 
-    savepath = os.getcwd()
+    savepath = os.getcwd() + '/'
     create_partitions(df_res, savepath=savepath, class_type="multi")

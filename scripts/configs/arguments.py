@@ -24,6 +24,7 @@ def get_args(
     parser.add_argument("--test_set", type=int, default=4)
     parser.add_argument("--num_models", type=int, default=5)
     parser.add_argument("--file_tag", type=str, default="cp")
+    parser.add_argument("--div_factor", type=int, default=100)
 
     # Optimization arguments
     parser.add_argument("--epochs", type=int, default=10)

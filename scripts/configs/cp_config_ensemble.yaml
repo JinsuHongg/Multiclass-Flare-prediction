@@ -6,7 +6,7 @@ train:
   train_set: ["1", "2", "3"]
   test_set: 4
   file_tag: "ENBL"
-  num_models: 5
+  num_models: 3
 
 optimize:
   epochs: 50
