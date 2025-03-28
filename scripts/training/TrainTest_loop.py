@@ -61,6 +61,7 @@ def train_loop(dataloader, model, loss_fn, optimizer=None, lr_scheduler=None):
 def test_loop(dataloader, model, loss_fn):
     # Set the model to evaluation mode - important for batch normalization and dropout layers
     # Unnecessary in this situation but added for best practices
+    device = next(model.parameters()).device
     model.eval()
     num_batches = len(dataloader)
 
@@ -70,7 +71,7 @@ def test_loop(dataloader, model, loss_fn):
     # also serves to reduce unnecessary gradient computations and memory usage for tensors with requires_grad=True
     with torch.no_grad():
         for X, y in dataloader:
-            X, y = X.cuda(), y.cuda()
+            X, y = X.to(device), y.to(device)
             pred = model(X)
             _, predictions = torch.max(pred, 1)
 
