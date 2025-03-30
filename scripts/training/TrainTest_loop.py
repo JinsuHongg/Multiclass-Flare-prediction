@@ -99,11 +99,10 @@ def test_loop(dataloader, model, loss_fn, softmax = None):
                 pred, y
             ).item()  # torch.nn.functional.log_softmax(pred, dim=1)
             
-            print(pred)
             # Move tensors to CPU and convert them to NumPy arrays only once
             pred_numpy = softmax(pred).cpu().detach().numpy()
-            predictions_numpy = predictions.cpu().detach().numpy()
-            y_numpy = y.cpu().detach().numpy()
+            predictions_numpy = predictions.unsqueeze(1).cpu().detach().numpy()
+            y_numpy = y.unsqueeze(1).cpu().detach().numpy()
 
             # Use a loop to avoid repeated np.concatenate calls
             data_list = [pred_numpy, predictions_numpy, y_numpy]

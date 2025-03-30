@@ -219,7 +219,7 @@ for wt in args.wt_decay:
 
             PATH = (
                 "./Multiclass-Flare-prediction/results/trained/"
-                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.pth"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}.pth"
             )
             # save model
             torch.save(
@@ -237,14 +237,13 @@ for wt in args.wt_decay:
             # save prediction array
             pred_path = (
                 "./Multiclass-Flare-prediction/results/prediction/"
-                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.json"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}.npz"
             )
 
             # with open(pred_path, "wb") as f:
             #     train_log = np.save(f, train_result)
             #     test_log = np.save(f, test_result)
-            with open(pred_path, "w") as file:
-                json.dump([train_result, test_result], file, indent=4)
+            np.savez(pred_path, train=train_result, test=test_result)
 
 
 training_result.append(

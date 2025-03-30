@@ -3,9 +3,10 @@ dir:
 
 train:
   model: "Alexnet"
-  train_set: ["1", "2", "3"]
+  train_set: ["1", "2"]
+  cal_set: 3
   test_set: 4
-  file_tag: "MCD"
+  file_tag: "CP"
 
 optimize:
   epochs: 50

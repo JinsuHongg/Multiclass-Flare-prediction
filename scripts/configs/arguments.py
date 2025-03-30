@@ -21,6 +21,7 @@ def get_args(
     # Training arguments
     parser.add_argument("--model", type=str, default="Alexnet")
     parser.add_argument("--train_set", type=float, nargs="+", default=[1, 2])
+    parser.add_argument("--cal_set", type=int, default=3)
     parser.add_argument("--test_set", type=int, default=4)
     parser.add_argument("--num_models", type=int, default=5)
     parser.add_argument("--file_tag", type=str, default="cp")
