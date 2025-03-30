@@ -1,6 +1,7 @@
 # basic package
 import os
 import glob
+import json
 import yaml
 import time
 import datetime
@@ -30,7 +31,7 @@ from .training import (
 
 # CUDA for PyTorch
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda:1" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
 print("1st check cuda..")
 print("Number of available device", torch.cuda.device_count())
@@ -117,6 +118,7 @@ test_dataloader = DataLoader(
 # Cross-validatation with optimization ( total = 4folds X Learning rate sets X weight decay sets )
 training_result = []
 iter = 0
+softmax_fn = nn.Softmax(dim=1)
 for wt in args.wt_decay:
     """
     [ Grid search start here ]
@@ -139,7 +141,7 @@ for wt in args.wt_decay:
         exit()
 
     # model setting
-    model = nn.DataParallel(net, device_ids=[0, 1]).to(device)
+    model = nn.DataParallel(net, device_ids=[1]).to(device)
 
     # class weight
     # device = next(model.parameters()).device
@@ -176,14 +178,15 @@ for wt in args.wt_decay:
             loss_fn=loss_fn,
             optimizer=optimizer,
             lr_scheduler=scheduler,
+            softmax = softmax_fn
         )
         test_loss, test_result = test_loop(
-            test_dataloader, model=model, loss_fn=loss_fn
+            test_dataloader, model=model, loss_fn=loss_fn, softmax = softmax_fn
         )
-        table = confusion_matrix(test_result[:, 1], test_result[:, 0])
+        table = confusion_matrix(test_result['label'], test_result['prediction'])
         HSS_score = HSS_multiclass(table)
         TSS_score = TSS_multiclass(table)
-        F1_score = f1_score(test_result[:, 1], test_result[:, 0], average="macro")
+        F1_score = f1_score(test_result['label'], test_result['prediction'], average="macro")
 
         # trace score and predictions
         duration = (time.time() - t0) / 60
@@ -216,7 +219,7 @@ for wt in args.wt_decay:
 
             PATH = (
                 "./Multiclass-Flare-prediction/results/trained/"
-                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.pth"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}.pth"
             )
             # save model
             torch.save(
@@ -234,12 +237,14 @@ for wt in args.wt_decay:
             # save prediction array
             pred_path = (
                 "./Multiclass-Flare-prediction/results/prediction/"
-                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}_{iter}.npy"
+                + f"{args.model}_{year}{month:02d}_train123_test4_{args.file_tag}.npz"
             )
 
-            with open(pred_path, "wb") as f:
-                train_log = np.save(f, train_result)
-                test_log = np.save(f, test_result)
+            # with open(pred_path, "wb") as f:
+            #     train_log = np.save(f, train_result)
+            #     test_log = np.save(f, test_result)
+            np.savez(pred_path, train=train_result, test=test_result)
+
 
 training_result.append(
     [
@@ -255,7 +260,6 @@ df_result = pd.DataFrame(
         "Epoch",
         "learning rate",
         "weight decay",
-        "class weight",
         "Train_loss",
         "Test_loss",
         "HSS",
