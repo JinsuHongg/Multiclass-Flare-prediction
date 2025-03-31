@@ -1,6 +1,7 @@
 # etc
 results/
 analysis/
+*analysis*.ipynb
 *.npz
 *.npy
 *.csv
