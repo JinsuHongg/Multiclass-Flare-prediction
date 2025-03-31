@@ -86,10 +86,11 @@ if __name__ == "__main__":
     # Initialize dictionaries
     cov_dict = {approach["name"]: [] for approach in approaches}
     len_dict = {approach["name"]: [] for approach in approaches}
+    empty_dict = {approach["name"]: [] for approach in approaches}
 
     # Loop through confidence levels
-    start = 0.95
-    end = 0.96
+    start = 0.6
+    end = 0.61
     interval = 0.01
 
     for conf in np.arange(start, end, interval):
@@ -112,6 +113,9 @@ if __name__ == "__main__":
                     "wb",
                 ) as f:
                     np.save(f, pred_region)
+                    np.save(f, cal_result['softmax'])
+                    np.save(f, cal_result['label'])
+                    np.save(f, val_result['softmax'])
                     np.save(f, val_result["label"])
 
             else:
@@ -119,12 +123,27 @@ if __name__ == "__main__":
                 getattr(CP, f"{approach['method']}_q")(cal_result)
                 pred_region = getattr(CP, f"{approach['method']}_region")(val_result)
 
+                with open(
+                    f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
+                    "wb",
+                ) as f:
+                    np.save(f, pred_region)
+                    np.save(f, cal_result['softmax'])
+                    np.save(f, cal_result['label'])
+                    np.save(f, val_result['softmax'])
+                    np.save(f, val_result["label"])
+
             # Calculate and store results
             avg_cov, avg_length = coverage_and_length(
                 pred_region=pred_region, label=val_result["label"]
             )
+
+            # Compute number of empty sets
+            num_empty = np.sum(np.all(pred_region == 0, axis=1))
+
             cov_dict[approach["name"]].append(avg_cov)
             len_dict[approach["name"]].append(avg_length)
+            empty_dict[approach["name"]].append(num_empty)
 
     # Convert dictionaries to a structured format
     conf_values = np.arange(start, end, interval)
@@ -134,6 +153,7 @@ if __name__ == "__main__":
     for approach in cov_dict.keys():
         results[f"{approach}_coverage"] = np.array(cov_dict[approach])
         results[f"{approach}_length"] = np.array(len_dict[approach])
+        results[f"{approach}_empty"] = np.array(empty_dict[approach])
 
     # Save to a .npz file (compressed)
     np.savez(

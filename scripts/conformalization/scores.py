@@ -57,7 +57,7 @@ class cp:
         # define confidence first
         n: int = cal_dict["softmax"].shape[0]
         arr_scores = self.find_cumsum_descending(softmax=cal_dict["softmax"])[
-            np.arange(n), cal_dict["label"]
+            np.arange(n), cal_dict["label"].flatten()
         ]
         # self.q_hat = float(np.quantile(arr_scores, q = confidence_corrected, method='higher'))
         self.q_hat = self.compute_q_hat(scores=arr_scores, confidence=self.confidence)
@@ -186,7 +186,7 @@ class cp:
         Returns:
             np.ndarray: Probabilities of true labels for each sample.
         """
-        return softmax[np.arange(softmax.shape[0]), label]
+        return softmax[np.arange(softmax.shape[0]), label.flatten()]
 
     @staticmethod
     def find_cumsum_descending(softmax: np.ndarray) -> np.ndarray:
