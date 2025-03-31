@@ -1,5 +1,7 @@
 # etc
 results/
+analysis/
+*.npz
 *.npy
 *.csv
 *.pth
