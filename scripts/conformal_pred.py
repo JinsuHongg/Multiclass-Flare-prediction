@@ -95,7 +95,11 @@ if __name__ == '__main__':
     len_dict = {approach["name"]: [] for approach in approaches}
 
     # Loop through confidence levels
-    for conf in np.arange(0.01, 1.0, 0.01):
+    start = 0.95
+    end = 0.96
+    interval = 0.01
+
+    for conf in np.arange(start, end, interval):
         print(f"Processing confidence: {conf*100:.1f}%...")
         
         # Process each approach
@@ -107,6 +111,11 @@ if __name__ == '__main__':
             if approach["is_mondrian"]:
                 CP.mcp_q(cal_dict=cal_result, type=approach["method"])
                 pred_region = CP.mcp_region(val_dict=val_result, type=approach["method"])
+
+                with open(f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy', 'wb') as f:
+                    np.save(f, pred_region)
+                    np.save(f, val_result['label'])
+
             else:
                 # Call appropriate method based on approach
                 getattr(CP, f"{approach['method']}_q")(cal_result)
@@ -118,7 +127,7 @@ if __name__ == '__main__':
             len_dict[approach["name"]].append(avg_length)
     
     # Convert dictionaries to a structured format
-    conf_values = np.arange(0.01, 1.0, 0.1)
+    conf_values = np.arange(start, end, interval)
     results = {
         'confidence': conf_values,
     }
@@ -127,5 +136,5 @@ if __name__ == '__main__':
         results[f'{approach}_length'] = np.array(len_dict[approach])
 
     # Save to a .npz file (compressed)
-    np.savez('../results/uncertainty/conformal_results.npz', **results)
+    np.savez(f'../results/uncertainty/conformal_results_start{start*100:.0f}_end{end*100:.0f}.npz', **results)
     
