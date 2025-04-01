@@ -157,9 +157,17 @@ class cp:
 
         if type == "label":
             for fl_class, q_hat in enumerate(self.q_hat_dict["label"]):
-                softmax_arr[:, fl_class] = np.where(
-                    softmax_arr[:, fl_class] >= (1 - q_hat), softmax_arr[:, fl_class], 0
+
+                pred_id = np.argmax(softmax_arr, axis=1)
+                rows = (pred_id == fl_class)
+
+                softmax_arr[rows, :] = np.where(
+                    softmax_arr[rows, :] >= (1 - q_hat), softmax_arr[rows, :], 0
                 )
+
+                # softmax_arr[:, fl_class] = np.where(
+                #     softmax_arr[:, fl_class] >= (1 - q_hat), softmax_arr[:, fl_class], 0
+                # )
 
         elif type == "aps":
             val_arr_sort = self.find_cumsum_descending(
@@ -168,9 +176,17 @@ class cp:
             for fl_class, q_hat in enumerate(
                 self.q_hat_dict["aps"]
             ):  # Corrected dictionary key
-                softmax_arr[:, fl_class] = softmax_arr[:, fl_class] * (
-                    val_arr_sort[:, fl_class] <= q_hat
+                
+                pred_id = np.argmax(val_dict["softmax"], axis=1)
+                rows = (pred_id == fl_class)
+
+                softmax_arr[rows, :] = softmax_arr[rows, :] * (
+                    val_arr_sort[rows, :] <= q_hat
                 )
+
+                # softmax_arr[:, fl_class] = softmax_arr[:, fl_class] * (
+                #     val_arr_sort[:, fl_class] <= q_hat
+                # )
 
         return softmax_arr
 

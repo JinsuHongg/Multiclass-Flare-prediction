@@ -89,8 +89,8 @@ if __name__ == "__main__":
     empty_dict = {approach["name"]: [] for approach in approaches}
 
     # Loop through confidence levels
-    start = 0.6
-    end = 0.61
+    start = 0.01
+    end = 1.0
     interval = 0.01
 
     for conf in np.arange(start, end, interval):
@@ -108,30 +108,30 @@ if __name__ == "__main__":
                     val_dict=val_result, type=approach["method"]
                 )
 
-                with open(
-                    f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
-                    "wb",
-                ) as f:
-                    np.save(f, pred_region)
-                    np.save(f, cal_result['softmax'])
-                    np.save(f, cal_result['label'])
-                    np.save(f, val_result['softmax'])
-                    np.save(f, val_result["label"])
+                # with open(
+                #     f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
+                #     "wb",
+                # ) as f:
+                #     np.save(f, pred_region)
+                #     np.save(f, cal_result['softmax'])
+                #     np.save(f, cal_result['label'])
+                #     np.save(f, val_result['softmax'])
+                #     np.save(f, val_result["label"])
 
             else:
                 # Call appropriate method based on approach
                 getattr(CP, f"{approach['method']}_q")(cal_result)
                 pred_region = getattr(CP, f"{approach['method']}_region")(val_result)
 
-                with open(
-                    f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
-                    "wb",
-                ) as f:
-                    np.save(f, pred_region)
-                    np.save(f, cal_result['softmax'])
-                    np.save(f, cal_result['label'])
-                    np.save(f, val_result['softmax'])
-                    np.save(f, val_result["label"])
+                # with open(
+                #     f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
+                #     "wb",
+                # ) as f:
+                #     np.save(f, pred_region)
+                #     np.save(f, cal_result['softmax'])
+                #     np.save(f, cal_result['label'])
+                #     np.save(f, val_result['softmax'])
+                #     np.save(f, val_result["label"])
 
             # Calculate and store results
             avg_cov, avg_length = coverage_and_length(
