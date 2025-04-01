@@ -100,7 +100,7 @@ class cp:
             self.q_hat_dict = {"label": []}
             for label in np.unique(cal_dict["label"]):
                 label_indices = cal_dict["label"] == label
-                label_subset = cal_dict["label"][label_indices]
+                label_subset = cal_dict["label"][label_indices.flatten()]
                 softmax_subset = cal_dict["softmax"][label_indices.flatten(), :]
                 assert softmax_subset.shape[0] == label_subset.shape[0]
 
@@ -116,7 +116,7 @@ class cp:
             self.q_hat_dict = {"aps": []}
             for label in np.unique(cal_dict["label"]):
                 label_indices = cal_dict["label"] == label
-                label_subset = cal_dict["label"][label_indices]
+                label_subset = cal_dict["label"][label_indices.flatten()]
                 softmax_subset = cal_dict["softmax"][label_indices.flatten(), :]
                 assert softmax_subset.shape[0] == label_subset.shape[0]
 

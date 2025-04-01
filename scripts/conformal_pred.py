@@ -89,8 +89,8 @@ if __name__ == "__main__":
     empty_dict = {approach["name"]: [] for approach in approaches}
 
     # Loop through confidence levels
-    start = 0.01
-    end = 1.0
+    start = 0.90
+    end = 0.91
     interval = 0.01
 
     for conf in np.arange(start, end, interval):
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                 pred_region = CP.mcp_region(
                     val_dict=val_result, type=approach["method"]
                 )
-
+                print(CP.q_hat_dict)
                 # with open(
                 #     f'../results/uncertainty/{approach["name"]}_{conf*100:.0f}.npy',
                 #     "wb",
