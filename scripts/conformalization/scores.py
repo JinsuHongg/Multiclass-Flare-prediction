@@ -162,7 +162,7 @@ class cp:
                 rows = (pred_id == fl_class)
 
                 softmax_arr[rows, :] = np.where(
-                    softmax_arr[:, rows] >= (1 - q_hat), softmax_arr[:, rows], 0
+                    softmax_arr[rows, :] >= (1 - q_hat), softmax_arr[rows, :], 0
                 )
 
                 # softmax_arr[:, fl_class] = np.where(
