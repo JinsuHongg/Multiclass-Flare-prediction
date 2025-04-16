@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 
-
 def train_loop(dataloader, model, loss_fn, optimizer=None, lr_scheduler=None, softmax=None):
     # Set the model to training mode - important for batch normalization and dropout layers
     # Unnecessary in this situation but added for best practices
@@ -35,21 +34,6 @@ def train_loop(dataloader, model, loss_fn, optimizer=None, lr_scheduler=None, so
         for key, data in zip(pred_dict.keys(), data_list):
             pred_dict[key] = np.concatenate((pred_dict[key], data), axis=0)
 
-        # pred_arr = np.append(
-        #     pred_arr,
-        #     np.concatenate(
-        #         (
-        #             pred.unsqueeze(1).cpu().detach().numpy(),
-        #             predictions.unsqueeze(1).cpu().detach().numpy(),
-        #             y.unsqueeze(1).cpu().detach().numpy(),
-        #         ),
-        #         axis=1,
-        #     ),
-        #     axis=0,
-        # )
-
-        # loss
-        # loss = loss_fn(pred, y)#.float()
         loss = loss_fn(
             pred, y
         )  # log_softmax after NLLloss! torch.nn.functional.log_softmax(pred, dim=1)
@@ -109,20 +93,38 @@ def test_loop(dataloader, model, loss_fn, softmax = None):
             for key, data in zip(pred_dict.keys(), data_list):
                 pred_dict[key] = np.concatenate((pred_dict[key], data), axis=0)
 
-            # pred_arr = np.append(
-            #     pred_arr,
-            #     np.concatenate(
-            #         (   
-            #             pred.unsqueeze(1).cpu().detach().numpy(),
-            #             predictions.unsqueeze(1).cpu().detach().numpy(),
-            #             y.unsqueeze(1).cpu().detach().numpy(),
-            #         ),
-            #         axis=1,
-            #     ),
-            #     axis=0,
-            # )
-
     test_loss /= num_batches
 
     # print(f"Test loss: {test_loss:.4f}")
+    return test_loss, pred_dict
+
+def MCD_testloop(dataloader, model) -> tuple:
+    # Set the model to evaluation mode - important for batch normalization and dropout layers
+    # Unnecessary in this situation but added for best practices
+    device = next(model.parameters()).device
+    model.eval()
+
+    # pred_arr = np.empty((0, 6), float)
+    pred_dict = {
+        'prediction': np.empty((0, 1), int),
+        'label': np.empty((0, 1), int)
+        }
+    # Evaluating the model with torch.no_grad() ensures that no gradients are computed during test mode
+    # also serves to reduce unnecessary gradient computations and memory usage for tensors with requires_grad=True
+    with torch.no_grad():
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            mean_pred, std_pred = model.mc_forward(X, mc_samples=50)
+
+            # Move tensors to CPU and convert them to NumPy arrays only once
+            pred_numpy = softmax(pred).cpu().detach().numpy()
+            predictions_numpy = predictions.unsqueeze(1).cpu().detach().numpy()
+            y_numpy = y.unsqueeze(1).cpu().detach().numpy()
+
+            # Use a loop to avoid repeated np.concatenate calls
+            data_list = [pred_numpy, predictions_numpy, y_numpy]
+            for key, data in zip(pred_dict.keys(), data_list):
+                pred_dict[key] = np.concatenate((pred_dict[key], data), axis=0)
+
     return test_loss, pred_dict

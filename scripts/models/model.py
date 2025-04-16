@@ -1,4 +1,5 @@
 import torch
+from torchvision.models import AlexNet_Weights
 
 # All neural network modules, nn.Linear, nn.Conv2d, BatchNorm, Loss functions
 import torch.nn as nn
@@ -11,7 +12,7 @@ class Alexnet(nn.Module):
         # Load pretrained AlexNet
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
         self.model = torch.hub.load(
-            "pytorch/vision:v0.10.0", "alexnet", pretrained=True
+            "pytorch/vision:v0.10.0", "alexnet", weights='IMAGENET1K_V1'
         )
 
         # Modify classifier to include MC Dropout

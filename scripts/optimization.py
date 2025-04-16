@@ -117,8 +117,10 @@ test_dataloader = DataLoader(
 
 # Cross-validatation with optimization ( total = 4folds X Learning rate sets X weight decay sets )
 training_result = []
-iter = 0
 softmax_fn = nn.Softmax(dim=1)
+best_loss = float("inf")
+best_epoch = 0
+best_hsstss = 0
 for wt in args.wt_decay:
     """
     [ Grid search start here ]
@@ -160,10 +162,6 @@ for wt in args.wt_decay:
     )
 
     # initiate variable for finding best epoch
-    iter += 1
-    best_loss = float("inf")
-    best_epoch = 0
-    best_hsstss = 0
     for t in range(args.epochs):
 
         # extract current time and compute training time
